@@ -2,6 +2,9 @@
 
 This is a simplified Library Management System built as part of an assignment to demonstrate CRUD operations, RESTful API design, database interaction, and frontend development.
 
+## Project Explaination Video
+video link :- https://drive.google.com/file/d/186Ari4mFjpEzOMzyMHTbCZqTsJEOAu4f/view?usp=drive_link
+
 ## Features
 
 *   **Member Management:**
