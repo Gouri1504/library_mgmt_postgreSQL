@@ -39,8 +39,8 @@ This is a simplified Library Management System built as part of an assignment to
 1.  **Clone the Repository:**
 
     ```bash
-    git clone <your-repository-url>
-    cd <your-repository-directory>
+    git clone https://github.com/Gouri1504/library_mgmt_postgreSQL
+    cd library_mgmt_postgreSQL
     ```
 
 2.  **Backend Setup:**
