@@ -219,6 +219,8 @@ const Books = () => {
         book_launch_date: "",
         book_publisher: ""
     });
+    const [editBook, setEditBook] = useState(null); // State to hold the book being edited
+
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -261,6 +263,17 @@ const Books = () => {
         }
     };
 
+     const handleUpdateBook = async () => {
+        try {
+            await axiosInstance.put(`/book/${editBook.book_id}`, editBook);
+            setBooks(books.map(b => b.book_id === editBook.book_id ? editBook : b));
+            setEditBook(null);
+        } catch (error) {
+            console.error("Error updating book:", error);
+        }
+    };
+
+
     return (
         <div className="container books">
             <h2>📖 Books</h2>
@@ -281,54 +294,86 @@ const Books = () => {
                                 <p>Category: {book.book_cat_id}</p>
                                 <p>Collection: {book.book_collection_id}</p>
                             </div>
-                            <button 
-                                className="action-btn delete-btn"
-                                onClick={() => deleteBook(book.book_id)}
-                            >
-                                ❌ Delete
-                            </button>
+                             <div className="action-buttons">
+                                 <button
+                                    className="action-btn edit-btn"
+                                    onClick={() => setEditBook(book)}
+                                >
+                                    ✏️ Edit
+                                </button>
+                                <button
+                                    className="action-btn delete-btn"
+                                    onClick={() => deleteBook(book.book_id)}
+                                >
+                                    ❌ Delete
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {showModal && (
-                <div className="overlay" onClick={() => setShowModal(false)}>
+
+            {(showModal || editBook) && (
+                <div className="overlay" onClick={() => {
+                     setShowModal(false);
+                     setEditBook(null);
+                 }}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
-                        <h3>Add New Book</h3>
+                        <h3>{editBook ? 'Edit Book' : 'Add New Book'}</h3>
                         <input
                             type="text"
                             placeholder="Book Name"
-                            value={newBook.book_name}
-                            onChange={e => setNewBook({...newBook, book_name: e.target.value})}
+                            value={editBook ? editBook.book_name : newBook.book_name}
+                            onChange={e => editBook
+                                ? setEditBook({...editBook, book_name: e.target.value})
+                                : setNewBook({...newBook, book_name: e.target.value})
+                            }
                         />
                         <input
                             type="text"
                             placeholder="Category ID"
-                            value={newBook.book_cat_id}
-                            onChange={e => setNewBook({...newBook, book_cat_id: e.target.value})}
+                            value={editBook ? editBook.book_cat_id : newBook.book_cat_id}
+                            onChange={e => editBook
+                                ? setEditBook({...editBook, book_cat_id: e.target.value})
+                                : setNewBook({...newBook, book_cat_id: e.target.value})
+                            }
                         />
                         <input
                             type="text"
                             placeholder="Collection ID"
-                            value={newBook.book_collection_id}
-                            onChange={e => setNewBook({...newBook, book_collection_id: e.target.value})}
+                            value={editBook ? editBook.book_collection_id : newBook.book_collection_id}
+                            onChange={e => editBook
+                                ? setEditBook({...editBook, book_collection_id: e.target.value})
+                                : setNewBook({...newBook, book_collection_id: e.target.value})
+                            }
                         />
                         <input
                             type="date"
                             placeholder="Launch Date"
-                            value={newBook.book_launch_date}
-                            onChange={e => setNewBook({...newBook, book_launch_date: e.target.value})}
+                            value={editBook ? editBook.book_launch_date : newBook.book_launch_date}
+                            onChange={e => editBook
+                                ? setEditBook({...editBook, book_launch_date: e.target.value})
+                                : setNewBook({...newBook, book_launch_date: e.target.value})
+                            }
                         />
                         <input
                             type="text"
                             placeholder="Publisher"
-                            value={newBook.book_publisher}
-                            onChange={e => setNewBook({...newBook, book_publisher: e.target.value})}
+                            value={editBook ? editBook.book_publisher : newBook.book_publisher}
+                            onChange={e => editBook
+                                ? setEditBook({...editBook, book_publisher: e.target.value})
+                                : setNewBook({...newBook, book_publisher: e.target.value})
+                            }
                         />
                         <div className="modal-actions">
-                            <button className="action-btn" onClick={addBook}>Add</button>
-                            <button className="action-btn" onClick={() => setShowModal(false)}>Cancel</button>
+                            <button className="action-btn" onClick={editBook ? handleUpdateBook : addBook}>
+                                {editBook ? 'Update' : 'Add'}
+                            </button>
+                            <button className="action-btn" onClick={() => {
+                                setShowModal(false);
+                                setEditBook(null);
+                            }}>Cancel</button>
                         </div>
                     </div>
                 </div>
