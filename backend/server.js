@@ -24,6 +24,10 @@ pool.query("SELECT NOW()", (err, res) => {
     }
 });
 
+app.get("/", (req, res) => {
+    res.status(200).json({ message: "Server is working fine!" });
+});
+
 // Apply API Key Middleware globally (optional)
 app.use(apiKeyMiddleware);
 
