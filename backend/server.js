@@ -24,6 +24,12 @@ pool.query("SELECT NOW()", (err, res) => {
     }
 });
 
+function sampleFunction() {
+    logMessage('info', 'testing redeploy', 'sampleFunction');
+}
+
+sampleFunction();
+
 app.get("/", (req, res) => {
     res.status(200).json({ message: "Server is working fine!" });
 });

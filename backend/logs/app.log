@@ -1,0 +1,13 @@
+[2025-02-26 18:47:38] [INFO] [ServerStart] - Server running on http://localhost:3000
+[2025-02-26 18:47:41] [INFO] [DBConnection] - Database connected! Current time: Wed Feb 26 2025 18:47:42 GMT+0530 (India Standard Time)
+[2025-02-26 18:48:14] [WARN] [Shutdown] - Server shutting down due to SIGINT
+[2025-02-26 18:48:17] [WARN] [Shutdown] - Server shutting down due to SIGINT
+[2025-02-26 18:48:18] [WARN] [Shutdown] - Server shutting down due to SIGINT
+[2025-02-26 18:48:19] [WARN] [Shutdown] - Server shutting down due to SIGINT
+[2025-02-26 18:49:59] [WARN] [Shutdown] - Server shutting down due to SIGINT
+[2025-02-26 18:52:58] [INFO] [Shutdown] - Server shutdown complete
+[2025-02-26 13:40:38] [INFO] [ServerStart] - Server running on http://localhost:3000
+[2025-02-26 13:40:40] [INFO] [DBConnection] - Database connected! Current time: Wed Feb 26 2025 13:40:41 GMT+0000 (Coordinated Universal Time)
+[2025-02-26 13:54:26] [WARN] [Shutdown] - Server shutting down due to SIGTERM
+[2025-02-26 13:54:46] [INFO] [ServerStart] - Server running on http://localhost:3000
+[2025-02-26 13:54:48] [INFO] [DBConnection] - Database connected! Current time: Wed Feb 26 2025 13:54:48 GMT+0000 (Coordinated Universal Time)
