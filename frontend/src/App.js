@@ -4,9 +4,8 @@ import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import axios from "axios";
 import "./App.css";
 
-const API_KEY = "API123";
-const API_PORT = 3000;
-const API_BASE_URL = `http://localhost:${API_PORT}`;
+const API_KEY = process.env.REACT_APP_API_KEY;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -14,32 +13,26 @@ const axiosInstance = axios.create({
 });
 
 const LibraryDashboard = () => {
-    const [issuedBooks, setIssuedBooks] = useState([]);
+    const [todayIssuedBooks, setTodayIssuedBooks] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
 
     useEffect(() => {
-        const fetchIssuedBooks = async () => {
+        const fetchTodayIssuedBooks = async () => {
             try {
                 setLoading(true);
                 const response = await axiosInstance.get('/issuance');
-
-                // Filter based on selected date and only "Issued" books
-                const filteredBooks = response.data.filter(issue => 
-                    issue.issuance_date.split('T')[0] === selectedDate &&
-                    issue.issuance_status === "Issued"
-                );
-
-                setIssuedBooks(filteredBooks);
+                const today = new Date().toISOString().split('T')[0];
+                const booksForToday = response.data.filter(issue => issue.target_return_date === today);
+                setTodayIssuedBooks(booksForToday);
             } catch (error) {
-                console.error("Error fetching issued books:", error);
+                console.error("Error fetching today's issued books:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchIssuedBooks();
-    }, [selectedDate]); // Re-fetch when selectedDate changes
+        fetchTodayIssuedBooks();
+    }, []);
 
     return (
         <div className="container">
@@ -51,48 +44,29 @@ const LibraryDashboard = () => {
             </nav>
 
             <section className="card">
-                <h2>Issued Books</h2>
-
-                {/* Date Filter */}
-                <label htmlFor="date-filter">Select Date:</label>
-                <input
-                    type="date"
-                    id="date-filter"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                />
-
+                <h2>Today's Issued Books</h2>
                 {loading ? (
                     <div className="loading"></div>
                 ) : (
-                    issuedBooks.length > 0 ? (
-                        <table className="book-table">
-                            <thead>
-                                <tr>
-                                    <th>📖 Book ID</th>
-                                    <th>👤 Issued To (Member ID)</th>
-                                    <th>📝 Issued By</th>
-                                    <th>📅 Issuance Date</th>
-                                    <th>⏳ Return By</th>
-                                    <th>📌 Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {issuedBooks.map((issue) => (
-                                    <tr key={issue.issuance_id}>
-                                        <td>{issue.book_id}</td>
-                                        <td>{issue.issuance_member}</td>
-                                        <td>{issue.issued_by}</td>
-                                        <td>{new Date(issue.issuance_date).toLocaleDateString()}</td>
-                                        <td>{new Date(issue.target_return_date).toLocaleDateString()}</td>
-                                        <td>{issue.issuance_status}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p className="empty-message">No pending books issued on this date.</p>
-                    )
+                    <ul className="book-list">
+                        {todayIssuedBooks.length > 0 ? (
+                            todayIssuedBooks.map((issue) => (
+                                <li key={issue.issuance_id} className="book-item">
+                                    <div className="book-info">
+                                        <span className="book-title">{issue.book_name}</span>
+                                        <span className="book-details">
+                                            issued to {issue.issuance_member} by {issue.issued_by}
+                                        </span>
+                                        <span className="return-date">
+                                            Return by: {issue.target_return_date}
+                                        </span>
+                                    </div>
+                                </li>
+                            ))
+                        ) : (
+                            <p className="empty-message">No books issued today.</p>
+                        )}
+                    </ul>
                 )}
             </section>
         </div>
@@ -527,7 +501,7 @@ const Issuance = () => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Book ID</th>
+                                    <th>Book Name</th>
                                     <th>Member</th>
                                     <th>Issued By</th>
                                     <th>Return Date</th>
@@ -537,7 +511,7 @@ const Issuance = () => {
                             <tbody>
                                 {issuances.map((issue) => (
                                     <tr key={issue.issuance_id}>
-                                        <td>{issue.book_id}</td>
+                                        <td>{issue.book_name}</td>
                                         <td>{issue.issuance_member}</td>
                                         <td>{issue.issued_by}</td>
                                         <td>{issue.target_return_date}</td>
