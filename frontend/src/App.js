@@ -1,4 +1,3 @@
-// App.js
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import axios from "axios";
@@ -13,26 +12,32 @@ const axiosInstance = axios.create({
 });
 
 const LibraryDashboard = () => {
-    const [todayIssuedBooks, setTodayIssuedBooks] = useState([]);
+    const [issuedBooks, setIssuedBooks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
 
     useEffect(() => {
-        const fetchTodayIssuedBooks = async () => {
+        const fetchIssuedBooks = async () => {
             try {
                 setLoading(true);
                 const response = await axiosInstance.get('/issuance');
-                const today = new Date().toISOString().split('T')[0];
-                const booksForToday = response.data.filter(issue => issue.target_return_date === today);
-                setTodayIssuedBooks(booksForToday);
+
+                // Filter based on selected date and only "Issued" books
+                const filteredBooks = response.data.filter(issue =>
+                    issue.issuance_date.split('T')[0] === selectedDate &&
+                    issue.issuance_status === "Issued"
+                );
+
+                setIssuedBooks(filteredBooks);
             } catch (error) {
-                console.error("Error fetching today's issued books:", error);
+                console.error("Error fetching issued books:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchTodayIssuedBooks();
-    }, []);
+        fetchIssuedBooks();
+    }, [selectedDate]); // Re-fetch when selectedDate changes
 
     return (
         <div className="container">
@@ -44,29 +49,48 @@ const LibraryDashboard = () => {
             </nav>
 
             <section className="card">
-                <h2>Today's Issued Books</h2>
+                <h2>Issued Books</h2>
+
+                {/* Date Filter */}
+                <label htmlFor="date-filter">Select Date:</label>
+                <input
+                    type="date"
+                    id="date-filter"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                />
+
                 {loading ? (
                     <div className="loading"></div>
                 ) : (
-                    <ul className="book-list">
-                        {todayIssuedBooks.length > 0 ? (
-                            todayIssuedBooks.map((issue) => (
-                                <li key={issue.issuance_id} className="book-item">
-                                    <div className="book-info">
-                                        <span className="book-title">{issue.book_name}</span>
-                                        <span className="book-details">
-                                            issued to {issue.issuance_member} by {issue.issued_by}
-                                        </span>
-                                        <span className="return-date">
-                                            Return by: {issue.target_return_date}
-                                        </span>
-                                    </div>
-                                </li>
-                            ))
-                        ) : (
-                            <p className="empty-message">No books issued today.</p>
-                        )}
-                    </ul>
+                    issuedBooks.length > 0 ? (
+                        <table className="book-table">
+                            <thead>
+                                <tr>
+                                    <th>📖 Book ID</th>
+                                    <th>👤 Issued To (Member ID)</th>
+                                    <th>📝 Issued By</th>
+                                    <th>📅 Issuance Date</th>
+                                    <th>⏳ Return By</th>
+                                    <th>📌 Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {issuedBooks.map((issue) => (
+                                    <tr key={issue.issuance_id}>
+                                        <td>{issue.book_id}</td>
+                                        <td>{issue.issuance_member}</td>
+                                        <td>{issue.issued_by}</td>
+                                        <td>{new Date(issue.issuance_date).toLocaleDateString()}</td>
+                                        <td>{new Date(issue.target_return_date).toLocaleDateString()}</td>
+                                        <td>{issue.issuance_status}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p className="empty-message">No pending books issued on this date.</p>
+                    )
                 )}
             </section>
         </div>
@@ -167,7 +191,7 @@ const Members = () => {
                             type="text"
                             placeholder="Name"
                             value={editMember ? editMember.mem_name : newMember.mem_name}
-                            onChange={e => editMember 
+                            onChange={e => editMember
                                 ? setEditMember({...editMember, mem_name: e.target.value})
                                 : setNewMember({...newMember, mem_name: e.target.value})
                             }
@@ -219,8 +243,6 @@ const Books = () => {
         book_launch_date: "",
         book_publisher: ""
     });
-    const [editBook, setEditBook] = useState(null); // State to hold the book being edited
-
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -263,17 +285,6 @@ const Books = () => {
         }
     };
 
-     const handleUpdateBook = async () => {
-        try {
-            await axiosInstance.put(`/book/${editBook.book_id}`, editBook);
-            setBooks(books.map(b => b.book_id === editBook.book_id ? editBook : b));
-            setEditBook(null);
-        } catch (error) {
-            console.error("Error updating book:", error);
-        }
-    };
-
-
     return (
         <div className="container books">
             <h2>📖 Books</h2>
@@ -294,86 +305,54 @@ const Books = () => {
                                 <p>Category: {book.book_cat_id}</p>
                                 <p>Collection: {book.book_collection_id}</p>
                             </div>
-                             <div className="action-buttons">
-                                 <button
-                                    className="action-btn edit-btn"
-                                    onClick={() => setEditBook(book)}
-                                >
-                                    ✏️ Edit
-                                </button>
-                                <button
-                                    className="action-btn delete-btn"
-                                    onClick={() => deleteBook(book.book_id)}
-                                >
-                                    ❌ Delete
-                                </button>
-                            </div>
+                            <button
+                                className="action-btn delete-btn"
+                                onClick={() => deleteBook(book.book_id)}
+                            >
+                                ❌ Delete
+                            </button>
                         </div>
                     ))}
                 </div>
             )}
 
-
-            {(showModal || editBook) && (
-                <div className="overlay" onClick={() => {
-                     setShowModal(false);
-                     setEditBook(null);
-                 }}>
+            {showModal && (
+                <div className="overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
-                        <h3>{editBook ? 'Edit Book' : 'Add New Book'}</h3>
+                        <h3>Add New Book</h3>
                         <input
                             type="text"
                             placeholder="Book Name"
-                            value={editBook ? editBook.book_name : newBook.book_name}
-                            onChange={e => editBook
-                                ? setEditBook({...editBook, book_name: e.target.value})
-                                : setNewBook({...newBook, book_name: e.target.value})
-                            }
+                            value={newBook.book_name}
+                            onChange={e => setNewBook({...newBook, book_name: e.target.value})}
                         />
                         <input
                             type="text"
                             placeholder="Category ID"
-                            value={editBook ? editBook.book_cat_id : newBook.book_cat_id}
-                            onChange={e => editBook
-                                ? setEditBook({...editBook, book_cat_id: e.target.value})
-                                : setNewBook({...newBook, book_cat_id: e.target.value})
-                            }
+                            value={newBook.book_cat_id}
+                            onChange={e => setNewBook({...newBook, book_cat_id: e.target.value})}
                         />
                         <input
                             type="text"
                             placeholder="Collection ID"
-                            value={editBook ? editBook.book_collection_id : newBook.book_collection_id}
-                            onChange={e => editBook
-                                ? setEditBook({...editBook, book_collection_id: e.target.value})
-                                : setNewBook({...newBook, book_collection_id: e.target.value})
-                            }
+                            value={newBook.book_collection_id}
+                            onChange={e => setNewBook({...newBook, book_collection_id: e.target.value})}
                         />
                         <input
                             type="date"
                             placeholder="Launch Date"
-                            value={editBook ? editBook.book_launch_date : newBook.book_launch_date}
-                            onChange={e => editBook
-                                ? setEditBook({...editBook, book_launch_date: e.target.value})
-                                : setNewBook({...newBook, book_launch_date: e.target.value})
-                            }
+                            value={newBook.book_launch_date}
+                            onChange={e => setNewBook({...newBook, book_launch_date: e.target.value})}
                         />
                         <input
                             type="text"
                             placeholder="Publisher"
-                            value={editBook ? editBook.book_publisher : newBook.book_publisher}
-                            onChange={e => editBook
-                                ? setEditBook({...editBook, book_publisher: e.target.value})
-                                : setNewBook({...newBook, book_publisher: e.target.value})
-                            }
+                            value={newBook.book_publisher}
+                            onChange={e => setNewBook({...newBook, book_publisher: e.target.value})}
                         />
                         <div className="modal-actions">
-                            <button className="action-btn" onClick={editBook ? handleUpdateBook : addBook}>
-                                {editBook ? 'Update' : 'Add'}
-                            </button>
-                            <button className="action-btn" onClick={() => {
-                                setShowModal(false);
-                                setEditBook(null);
-                            }}>Cancel</button>
+                            <button className="action-btn" onClick={addBook}>Add</button>
+                            <button className="action-btn" onClick={() => setShowModal(false)}>Cancel</button>
                         </div>
                     </div>
                 </div>
@@ -546,7 +525,7 @@ const Issuance = () => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Book Name</th>
+                                    <th>Book ID</th>
                                     <th>Member</th>
                                     <th>Issued By</th>
                                     <th>Return Date</th>
@@ -556,7 +535,7 @@ const Issuance = () => {
                             <tbody>
                                 {issuances.map((issue) => (
                                     <tr key={issue.issuance_id}>
-                                        <td>{issue.book_name}</td>
+                                        <td>{issue.book_id}</td>
                                         <td>{issue.issuance_member}</td>
                                         <td>{issue.issued_by}</td>
                                         <td>{issue.target_return_date}</td>
