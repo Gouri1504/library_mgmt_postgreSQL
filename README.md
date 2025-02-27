@@ -9,8 +9,9 @@ This is a simplified Library Management System built as part of an assignment to
 ---
 
 ## 📹 Project Explanation Video  
-🎥 ** Task 2 Video Link**: [Watch Here](https://drive.google.com/file/d/1kQy1JxEGaLws5mOaBPOxCoHZiqS393A2/view?usp=sharing) 
-🎥 **Video Link**: [Watch Here](https://drive.google.com/file/d/186Ari4mFjpEzOMzyMHTbCZqTsJEOAu4f/view?usp=drive_link)  
+🎥 **Task -2 Video Link**: [Watch Here](https://drive.google.com/file/d/1kQy1JxEGaLws5mOaBPOxCoHZiqS393A2/view?usp=sharing) 
+
+🎥 **Task -1 Video Link**: [Watch Here](https://drive.google.com/file/d/186Ari4mFjpEzOMzyMHTbCZqTsJEOAu4f/view?usp=drive_link)  
 
 ---
 
